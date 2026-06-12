@@ -249,6 +249,16 @@ function cardHasQ1(data) {
   return Object.values(data.metrics).some(m => (m.categories || []).some(c => c.quartile === 1));
 }
 
+// Which databases rank this journal Q1, so the crown can name them. SJR and
+// Scopus often disagree (e.g. Journal of Molecular Structure is Q2 on SJR but
+// Q1 on Scopus CiteScore) — a blanket "Q1 journal" would look wrong vs SCImago.
+function q1Sources(data) {
+  const out = [], m = data.metrics;
+  if (m.sjr && (m.sjr.categories || []).some(c => c.quartile === 1)) out.push('SJR');
+  if (m.scopus && (m.scopus.categories || []).some(c => c.quartile === 1)) out.push('Scopus');
+  return out;
+}
+
 function maybeNotice(data) {
   const frag = document.createDocumentFragment();
   if (!data.metrics.scopus && !state.scopusLoaded) {
@@ -263,7 +273,10 @@ function maybeNotice(data) {
 function renderCard(data) {
   const card = document.createElement('div');
   card.className = 'jcard';
-  const anyQ1 = cardHasQ1(data);
+  const q1s = q1Sources(data);
+  const anyQ1 = q1s.length > 0;
+  const crownLabel = q1s.length === 2 ? 'Q1 journal'
+    : q1s.length === 1 ? 'Q1 in ' + q1s[0] : '';
   const sjr = data.metrics.sjr, scopus = data.metrics.scopus;
   const meta = [];
   if (data.publisher) meta.push(`<span><b>${esc(data.publisher)}</b></span>`);
@@ -282,7 +295,7 @@ function renderCard(data) {
         <div class="jmeta">${meta.join('')}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-        ${anyQ1 ? '<span class="crown">👑 Q1 journal</span>' : ''}
+        ${anyQ1 ? `<span class="crown">👑 ${crownLabel}</span>` : ''}
         <div class="head-actions">
           <button class="icon-btn cmp-add">+ Compare</button>
         </div>
