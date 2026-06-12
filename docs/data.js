@@ -60,6 +60,22 @@
     return sh[c] || null;
   }
 
+  // Per-category ranked lists, loaded only when a category is opened.
+  let categories = null, catLoading = null;
+  const catCache = new Map();
+  async function ensureCategories() {
+    if (categories) return;
+    if (!catLoading) catLoading = _fetch(DATA + 'categories.json')
+      .then(r => r.json()).then(m => { categories = m; });
+    await catLoading;
+  }
+  async function catList(source, id) {
+    const k = source + '/' + id;
+    if (!catCache.has(k)) catCache.set(k,
+      _fetch(DATA + 'cat/' + source + '/' + id + '.json').then(r => r.json()));
+    return catCache.get(k);
+  }
+
   // ---- search scoring (approximates the server's fuzzy rank) ----
   function lev(a, b) {
     const m = a.length, n = b.length;
@@ -144,6 +160,19 @@
         if (d && d.title) items.push(Object.assign({ scopus_loaded: true }, d));
       }
       return { items, scopus_loaded: true };
+    }
+    if (ep.startsWith('category')) {
+      const source = qp.get('source') === 'scopus' ? 'scopus' : 'sjr';
+      const name = qp.get('name') || '';
+      await ensureCategories();
+      const id = categories[source] ? categories[source][name] : undefined;
+      if (id == null) return { category: name, source, total: 0, items: [] };
+      const rows = await catList(source, id);
+      const items = rows.map(e => ({
+        rank: e[0], percentile: e[1], quartile: e[2], value: e[3], id: e[4],
+        title: index[e[4]] ? index[e[4]].title : '',
+      }));
+      return { category: name, source, total: items.length, items };
     }
     return { error: 'unknown endpoint', scopus_loaded: true };
   }

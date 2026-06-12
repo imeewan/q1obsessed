@@ -179,10 +179,25 @@ def build():
     if multi:
         print(f"[note] {multi} clusters had >1 journal from a source (kept the richest)")
 
-    # Assemble index + sharded details.
+    # Assemble index + sharded details + per-category ranked lists.
     index, shards = [], {}
+    cat_entries = {"sjr": {}, "scopus": {}}   # source -> category -> [[rank,pct,q,val,clusterId], ...]
     for c, r in enumerate(recs):
         index.append([r["title"], r["issn"], 1 if r["sj"] else 0, 1 if r["sc"] else 0])
+        if r["sj"]:
+            sval = round(float(r["sj"]["sjr"]), 3) if r["sj"]["sjr"] is not None else None
+            for cc in r["sj"]["cats"]:
+                cat_entries["sjr"].setdefault(cc["category"], []).append([
+                    int(cc["rank"]) if cc["rank"] is not None else None,
+                    round(float(cc["percentile"]), 1) if cc["percentile"] is not None else 0.0,
+                    int(cc["quartile"]) if cc["quartile"] is not None else 4, sval, c])
+        if r["sc"]:
+            cval = round(float(r["sc"]["citescore"]), 2) if r["sc"]["citescore"] is not None else None
+            for cc in r["sc"]["cats"]:
+                cat_entries["scopus"].setdefault(cc["category"], []).append([
+                    int(cc["rank"]) if cc["rank"] is not None else None,
+                    round(float(cc["percentile"]), 1) if cc["percentile"] is not None else 0.0,
+                    int(cc["quartile"]) if cc["quartile"] is not None else 4, cval, c])
         metrics = {}
         if r["sj"]:
             j = r["sj"]
@@ -212,11 +227,12 @@ def build():
                   "publisher": r["publisher"], "metrics": metrics}
         shards.setdefault(c // SHARD, {})[c] = detail
 
+    ncat = len(cat_entries["sjr"]) + len(cat_entries["scopus"])
     write_site(index, shards, {
         "sjr_journals": len(sjr), "scopus_journals": len(sco),
         "sjr_categories": nfields, "scopus_loaded": True,
-    })
-    print(f"[done] {len(index)} clusters, {len(shards)} shards -> {DOCS}")
+    }, cat_entries)
+    print(f"[done] {len(index)} clusters, {len(shards)} shards, {ncat} category lists -> {DOCS}")
 
 
 # --------------------------------------------------------------------------- #
@@ -254,7 +270,7 @@ def _copy_version(name, is_classic):
             shutil.copy2(sp, os.path.join(dst, fn))
 
 
-def write_site(index, shards, stats):
+def write_site(index, shards, stats, cat_entries):
     if os.path.isdir(DATA_OUT):
         shutil.rmtree(DATA_OUT)
     os.makedirs(DET_OUT)
@@ -268,6 +284,22 @@ def write_site(index, shards, stats):
     for b, obj in shards.items():
         with open(os.path.join(DET_OUT, f"{b}.json"), "w", encoding="utf-8") as f:
             json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
+
+    # Per-category ranked lists (one file per field, lazy-loaded on click).
+    # categories.json maps a category name -> its file id, per source.
+    cat_root = os.path.join(DATA_OUT, "cat")
+    categories_map = {"sjr": {}, "scopus": {}}
+    for source in ("sjr", "scopus"):
+        sdir = os.path.join(cat_root, source)
+        os.makedirs(sdir, exist_ok=True)
+        for catid, name in enumerate(sorted(cat_entries[source])):
+            rows = cat_entries[source][name]
+            rows.sort(key=lambda e: (e[0] is None, e[0] if e[0] is not None else 0))
+            categories_map[source][name] = catid
+            with open(os.path.join(sdir, f"{catid}.json"), "w", encoding="utf-8") as f:
+                json.dump(rows, f, ensure_ascii=False, separators=(",", ":"))
+    with open(os.path.join(DATA_OUT, "categories.json"), "w", encoding="utf-8") as f:
+        json.dump(categories_map, f, ensure_ascii=False, separators=(",", ":"))
 
     # the shared client data layer
     shutil.copy2(DATA_JS_SRC, os.path.join(DOCS, "data.js"))

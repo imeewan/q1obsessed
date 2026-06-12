@@ -288,6 +288,26 @@ def stats():
             "sjr_categories": ncat, "scopus_loaded": scopus_loaded()}
 
 
+@app.get("/api/category")
+def category(source: str, name: str):
+    """Every journal in a field, ranked best-to-worst (mirrors SCImago's view)."""
+    src = "scopus" if source == "scopus" else "sjr"
+    jt, ct = f"{src}_journal", f"{src}_category"
+    valcol = "citescore" if src == "scopus" else "sjr"
+    con = db()
+    rows = con.execute(
+        f"SELECT j.id id, j.title title, c.percentile p, c.rank rank, "
+        f"c.quartile q, j.{valcol} val FROM {ct} c JOIN {jt} j ON j.id=c.journal_id "
+        f"WHERE c.category=? ORDER BY (c.rank IS NULL), c.rank", (name,)).fetchall()
+    con.close()
+    items = [{"id": r["id"], "title": r["title"],
+              "percentile": round(r["p"], 1) if r["p"] is not None else 0.0,
+              "rank": r["rank"], "quartile": r["q"],
+              "value": round(r["val"], 3) if r["val"] is not None else None}
+             for r in rows]
+    return {"category": name, "source": src, "total": len(items), "items": items}
+
+
 # --------------------------------------------------------------------------- #
 # Static frontend — two UI versions behind one API
 #   /          -> the original elegant dashboard (default; static/classic/)

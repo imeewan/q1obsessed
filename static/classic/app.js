@@ -316,10 +316,11 @@ function metricCol(m, src, label) {
   }
   const rows = m.categories.map((c, i) => {
     const pct = c.percentile.toFixed(1);
-    return `<div class="cat-row" style="animation-delay:${i * 60}ms">
+    return `<div class="cat-row cat-click" data-src="${src}" data-cat="${esc(c.category)}" data-jid="${m._id}"
+      title="See every journal ranked in ${esc(c.category)}" style="animation-delay:${i * 60}ms">
       <div class="cat-top">
         <span class="cat-name">${esc(c.category)} <span class="qbadge ${qClass(c.quartile)}">Q${c.quartile}</span></span>
-        <span class="cat-rank">#${c.rank}${c.total ? ' / ' + c.total : ''}</span>
+        <span class="cat-rank">#${c.rank}${c.total ? ' / ' + c.total : ''}<span class="cat-chev">›</span></span>
       </div>
       <div class="bar"><div class="bar-fill fill-${src}" data-pct="${pct}"></div></div>
       <div style="text-align:right"><span class="cat-pct" style="color:var(--${src})">${pct}<span style="font-size:11px">pct</span></span></div>
@@ -340,6 +341,83 @@ function revealBars(scope) {
     const pct = parseFloat(b.dataset.pct);
     requestAnimationFrame(() => { b.style.width = pct + '%'; });
   });
+}
+
+/* -------- category ranking: click a field to see every journal ranked -------- */
+resultsEl.addEventListener('click', (e) => {
+  const row = e.target.closest('.cat-click');
+  if (row) openCategory(row.dataset.src, row.dataset.cat, parseInt(row.dataset.jid, 10));
+});
+
+async function openCategory(source, category, currentId) {
+  const data = await api(`/api/category?source=${source}&name=${encodeURIComponent(category)}`);
+  if (!data || !data.items || !data.items.length) return;
+  showCategoryModal(source, category, data, currentId);
+}
+
+function showCategoryModal(source, category, data, currentId) {
+  closeCategoryModal();
+  const srcLabel = source === 'sjr' ? 'SJR' : 'CiteScore';
+  const ov = document.createElement('div');
+  ov.className = 'cat-modal-ov';
+  ov.innerHTML = `
+    <div class="cat-modal" role="dialog" aria-modal="true">
+      <div class="cm-head">
+        <div>
+          <div class="cm-src"><span class="dot ${source}"></span>${srcLabel} field ranking</div>
+          <h3 class="cm-title">${esc(category)}</h3>
+          <div class="cm-sub">${data.total.toLocaleString()} journals · ranked best → worst</div>
+        </div>
+        <button class="cm-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="cm-filter">
+        <input type="text" placeholder="Find a journal in this field…" aria-label="Filter this field" />
+      </div>
+      <div class="cm-list"></div>
+    </div>`;
+  document.body.appendChild(ov);
+  const listEl = $('.cm-list', ov);
+
+  const rowHtml = (it) => {
+    const cur = it.id === currentId;
+    const val = it.value != null ? (source === 'sjr' ? (+it.value).toFixed(3) : (+it.value).toFixed(1)) : '—';
+    return `<div class="cm-row ${cur ? 'is-current' : ''}" data-id="${it.id}">
+      <span class="cm-rank">#${it.rank != null ? it.rank : '—'}</span>
+      <span class="cm-name">${esc(it.title)}${cur ? ' <span class="cm-you">★ you</span>' : ''}</span>
+      <span class="qbadge ${qClass(it.quartile)}">Q${it.quartile}</span>
+      <span class="cm-pct" style="color:var(--${source})">${it.percentile.toFixed(1)}</span>
+      <span class="cm-val">${val}</span>
+    </div>`;
+  };
+  const render = (q) => {
+    const qn = (q || '').trim().toLowerCase();
+    const items = qn ? data.items.filter(it => it.title.toLowerCase().includes(qn)) : data.items;
+    listEl.innerHTML = items.length ? items.map(rowHtml).join('')
+      : '<div class="cm-empty">No journal in this field matches that.</div>';
+  };
+  render('');
+  const cur = $('.cm-row.is-current', ov);
+  if (cur) cur.scrollIntoView({ block: 'center' });
+
+  let fdeb;
+  $('.cm-filter input', ov).addEventListener('input', (e) => {
+    clearTimeout(fdeb); const v = e.target.value; fdeb = setTimeout(() => render(v), 120);
+  });
+  listEl.addEventListener('click', (e) => {
+    const r = e.target.closest('.cm-row');
+    if (!r) return;
+    closeCategoryModal();
+    loadJournal(source, parseInt(r.dataset.id, 10), true);
+  });
+  $('.cm-close', ov).addEventListener('click', closeCategoryModal);
+  ov.addEventListener('click', (e) => { if (e.target === ov) closeCategoryModal(); });
+  document.addEventListener('keydown', catEsc);
+}
+function catEsc(e) { if (e.key === 'Escape') closeCategoryModal(); }
+function closeCategoryModal() {
+  const ov = $('.cat-modal-ov');
+  if (ov) ov.remove();
+  document.removeEventListener('keydown', catEsc);
 }
 
 /* ---------------- compare ---------------- */
