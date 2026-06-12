@@ -290,7 +290,7 @@ function renderCard(data) {
     </div>
     <div class="metrics-grid">
       ${metricCol(sjr, 'sjr', 'SJR')}
-      ${metricCol(scopus, 'scopus', 'CiteScore')}
+      ${metricCol(scopus, 'scopus', 'Scopus')}
     </div>`;
 
   const addBtn = $('.cmp-add', card);
@@ -329,7 +329,7 @@ function metricCol(m, src, label) {
   const val = m.metric_value != null ? m.metric_value : '—';
   return `<div class="metric-col">
     <div class="metric-head">
-      <span class="metric-name"><span class="dot ${src}"></span>${m.metric_name}</span>
+      <span class="metric-name"><span class="dot ${src}"></span>${label}</span>
       <span class="metric-val"><b>${typeof val === 'number' ? val.toFixed(3) : val}</b>${m.h_index ? ' · h-index ' + Math.round(m.h_index) : ''}</span>
     </div>
     ${rows || '<div class="cat-rank">No category data.</div>'}
@@ -357,7 +357,7 @@ async function openCategory(source, category, currentId) {
 
 function showCategoryModal(source, category, data, currentId) {
   closeCategoryModal();
-  const srcLabel = source === 'sjr' ? 'SJR' : 'CiteScore';
+  const srcLabel = source === 'sjr' ? 'SJR' : 'Scopus';
   const ov = document.createElement('div');
   ov.className = 'cat-modal-ov';
   ov.innerHTML = `
@@ -461,7 +461,7 @@ async function renderCompare() {
       const top = m.categories[0];
       const avg = m.categories.length ? (m.categories.reduce((s, c) => s + c.percentile, 0) / m.categories.length) : 0;
       const best = m.categories.reduce((a, b) => b.percentile > a.percentile ? b : a, m.categories[0] || { percentile: 0 });
-      return `<div class="cmp-metric"><span class="dot ${src}"></span>${m.metric_name} ${m.metric_value != null ? '· ' + (+m.metric_value).toFixed(2) : ''}</div>
+      return `<div class="cmp-metric"><span class="dot ${src}"></span>${src === 'scopus' ? 'Scopus' : m.metric_name} ${m.metric_value != null ? '· ' + (+m.metric_value).toFixed(2) : ''}</div>
         <div class="cmp-stat"><span>Best field</span><span class="v" style="color:var(--${src})">${best ? best.percentile.toFixed(1) + ' pct' : '—'}</span></div>
         <div class="cmp-stat"><span>Avg percentile</span><span class="v">${avg.toFixed(1)}</span></div>
         <div class="cmp-stat"><span>Fields</span><span class="v">${m.categories.length}</span></div>
