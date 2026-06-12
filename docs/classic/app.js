@@ -158,8 +158,18 @@ function animateNum(el, to, suffix = '') {
 }
 
 /* ---------------- search ---------------- */
-const input = $('#search-input'), sugg = $('#suggestions'), clearBtn = $('#clear-btn');
+const input = $('#search-input'), sugg = $('#suggestions'), clearBtn = $('#clear-btn'), goBtn = $('#search-go');
 const quickRow = $('#quick-row');
+
+// Open the best match — same behaviour as pressing Enter. Handy on mobile
+// where the on-screen keyboard's enter key is easy to miss.
+function submitSearch() {
+  const items = $$('.sugg', sugg);
+  if (activeIdx >= 0 && items[activeIdx]) { items[activeIdx].click(); return; }
+  if (state.lastResults[0]) { openFromSuggestion(state.lastResults[0]); return; }
+  const q = input.value.trim();
+  if (q) doSuggest(q);
+}
 let activeIdx = -1, debounce, lastQ = '';
 
 function showSugg(show) {
@@ -178,12 +188,11 @@ input.addEventListener('keydown', (e) => {
   const items = $$('.sugg', sugg);
   if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(items.length - 1, activeIdx + 1); paintActive(items); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(0, activeIdx - 1); paintActive(items); }
-  else if (e.key === 'Enter') {
-    if (activeIdx >= 0 && items[activeIdx]) items[activeIdx].click();
-    else if (state.lastResults[0]) openFromSuggestion(state.lastResults[0]);
-  } else if (e.key === 'Escape') showSugg(false);
+  else if (e.key === 'Enter') { e.preventDefault(); submitSearch(); }
+  else if (e.key === 'Escape') showSugg(false);
 });
 clearBtn.addEventListener('click', () => { input.value = ''; clearBtn.hidden = true; showSugg(false); input.focus(); });
+goBtn.addEventListener('click', () => { submitSearch(); input.blur(); });
 document.addEventListener('click', (e) => { if (!e.target.closest('.search-wrap')) showSugg(false); });
 
 function paintActive(items) {

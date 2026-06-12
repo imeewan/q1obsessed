@@ -72,6 +72,14 @@ main,.topbar,.footer{position:relative;z-index:2}
 #search-input{flex:1;background:none;border:none;outline:none;color:var(--ink);font-size:18px;font-family:'Inter'}
 #search-input::placeholder{color:var(--faint)}
 .clear-btn{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
+.search-go{flex:none;display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--q1),var(--q1b));
+  color:#241a00;border:none;border-radius:12px;padding:9px 15px;font-family:'Sora';font-weight:800;font-size:14px;
+  cursor:pointer;transition:.18s;box-shadow:0 6px 18px -8px var(--q1b)}
+.search-go:hover{transform:translateY(-1px);box-shadow:0 10px 26px -8px var(--q1b)}
+.search-go:active{transform:translateY(0)}
+.search-go svg{display:block}
+/* On phones, keep just the icon so it stays compact next to the input */
+@media(max-width:560px){.search-go{padding:10px 11px}.search-go .go-text{display:none}}
 
 .suggestions{
   list-style:none;margin:10px 0 0;padding:7px;position:absolute;left:0;right:0;top:100%;z-index:70;
