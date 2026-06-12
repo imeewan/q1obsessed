@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Q1obsessed — journal percentiles, decoded</title>
+<meta name="description" content="Search any journal and instantly see its real SJR and Scopus percentile and rank in every field it belongs to." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Q1</span>
+      <span class="brand-word">obsessed</span>
+    </div>
+    <nav class="topnav">
+      <button class="nav-pill active" data-mode="search">Search</button>
+      <button class="nav-pill" data-mode="compare">Compare <span id="compare-count" class="chip-count">0</span></button>
+      <a class="nav-pill ghost" id="stats-pill" href="#">— journals</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO / SEARCH -->
+    <section id="hero" class="hero">
+      <h1 class="hero-title">
+        Where does your journal <span class="grad">actually</span> rank?
+      </h1>
+      <p class="hero-sub">
+        Type a journal name. Get its <strong>real</strong> percentile and rank in every field —
+        from <span class="tag-sjr">SJR</span> and <span class="tag-scopus">Scopus</span>, side by side.
+      </p>
+
+      <div class="search-wrap">
+        <div class="search-box">
+          <svg class="search-ic" viewBox="0 0 24 24" width="22" height="22"><path d="M21 21l-4.3-4.3M11 18a7 7 0 110-14 7 7 0 010 14z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="search-input" type="text" autocomplete="off" spellcheck="false"
+                 placeholder="e.g. Bioinformatics, ACS Omega, Nature…" />
+          <button id="clear-btn" class="clear-btn" aria-label="clear" hidden>&times;</button>
+        </div>
+        <ul id="suggestions" class="suggestions" hidden></ul>
+      </div>
+
+      <div class="quick-row" id="quick-row">
+        <span class="quick-label">Try:</span>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="results" aria-live="polite"></section>
+
+    <!-- COMPARE TRAY -->
+    <section id="compare-view" class="compare-view" hidden></section>
+  </main>
+
+  <div id="compare-dock" class="compare-dock" hidden>
+    <div class="dock-inner">
+      <div class="dock-items" id="dock-items"></div>
+      <button id="dock-go" class="dock-go">Compare →</button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span>Q1obsessed</span> · data: SCImago SJR 2025 &amp; Scopus CiteScore ·
+    percentiles computed live from the full databases
+  </footer>
+
+  <a href="/arcade/" class="ver-switch" title="Try the game-like Arcade version">
+    <span class="vs-ic">🕹️</span><span class="vs-text">Arcade mode</span>
+  </a>
+  <style>
+    .ver-switch{position:fixed;left:18px;bottom:16px;z-index:50;display:inline-flex;align-items:center;gap:8px;
+      font-family:'Inter',sans-serif;font-weight:700;font-size:13px;text-decoration:none;color:#ffe9a8;
+      background:linear-gradient(135deg,rgba(255,126,182,.16),rgba(255,211,92,.14));
+      border:1px solid rgba(255,126,182,.35);border-radius:999px;padding:9px 15px;backdrop-filter:blur(10px);
+      box-shadow:0 8px 28px -10px rgba(255,126,182,.5);transition:.22s cubic-bezier(.2,.8,.2,1)}
+    .ver-switch:hover{transform:translateY(-2px) scale(1.04);border-color:rgba(255,126,182,.7);
+      box-shadow:0 12px 34px -8px rgba(255,126,182,.6);color:#fff}
+    .ver-switch .vs-ic{font-size:16px;animation:vsWobble 2.6s ease-in-out infinite}
+    @keyframes vsWobble{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+    @media(max-width:560px){.ver-switch .vs-text{display:none}.ver-switch{padding:11px}}
+  </style>
+  <script src="app.js"></script>
+</body>
+</html>

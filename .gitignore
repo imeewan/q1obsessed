@@ -1,0 +1,25 @@
+# Large raw source data and the generated SQLite DB.
+# The deployable site is fully self-contained in docs/ (data baked to JSON),
+# so these are not needed in the repo. Keep them locally to refresh the data.
+# NOTE: leading slash anchors to repo root so docs/data/ (the baked site) is NOT ignored.
+/data/
+/q1obsessed.db
+*.jsonl
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Scratch / test artifacts
+_dom.html
+**/selftest.html

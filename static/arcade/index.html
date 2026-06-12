@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Q1obsessed // ARCADE</title>
+  <meta name="description" content="Journal percentile arcade — pull a journal card, check every field, and battle journals VS-style. SJR + Scopus CiteScore.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@500;700;900&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- particle FX layer -->
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <!-- CRT scanline overlay -->
+  <div class="crt" aria-hidden="true"></div>
+  <!-- full-screen flash -->
+  <div id="flash" class="flash" aria-hidden="true"></div>
+
+  <a class="switch-link" href="/">&larr; switch version</a>
+
+  <header class="hud">
+    <div class="hud-brand">
+      <div class="hud-logo">Q1<span>OBSESSED</span></div>
+      <div class="hud-sub">ARCADE EDITION</div>
+    </div>
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track" id="marquee"><span>LOADING CABINET DATA &#9733; PLEASE STAND BY &#9733;&nbsp;</span><span>LOADING CABINET DATA &#9733; PLEASE STAND BY &#9733;&nbsp;</span></div>
+    </div>
+    <div class="hud-right">
+      <div class="combo" id="combo" hidden>COMBO <b id="comboN">x1</b></div>
+      <button class="hud-btn" id="muteBtn" type="button" aria-pressed="false">SOUND: ON</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ SEARCH ZONE ============ -->
+    <section class="search-zone">
+      <h1 class="title" data-text="JOURNAL ARCADE">JOURNAL ARCADE</h1>
+      <p class="tagline">PULL A CARD &bull; READ THE PERCENTILES &bull; FIGHT</p>
+
+      <div class="search-wrap">
+        <div class="search-box">
+          <span class="prompt" aria-hidden="true">&#9658;</span>
+          <input id="searchInput" type="text" autocomplete="off" spellcheck="false"
+                 placeholder="INSERT JOURNAL NAME"
+                 role="combobox" aria-expanded="false" aria-autocomplete="list"
+                 aria-controls="suggestions" aria-label="Search a journal">
+          <span class="cursor-blink" aria-hidden="true">_</span>
+        </div>
+        <ul id="suggestions" role="listbox" aria-label="Journal suggestions" hidden></ul>
+      </div>
+
+      <div class="try-row">
+        <span class="try-label">TRY:</span>
+        <span id="tryChips"></span>
+      </div>
+    </section>
+
+    <!-- ============ STAGE (card / battle renders here) ============ -->
+    <section id="stage" class="stage" aria-live="polite">
+      <div class="howto">
+        <div class="howto-head">HOW TO PLAY</div>
+        <ol class="howto-steps">
+          <li><b>01</b> SEARCH ANY JOURNAL — TYPOS FORGIVEN</li>
+          <li><b>02</b> PULL ITS CARD — EVERY FIELD, RANK &amp; PERCENTILE, FROM BOTH SJR &amp; SCOPUS</li>
+          <li><b>03</b> ADD UP TO 5 CARDS TO YOUR PARTY</li>
+          <li><b>04</b> PRESS <span class="howto-fight">FIGHT!</span> FOR A VS BATTLE</li>
+        </ol>
+        <div class="howto-credit">2 DATABASES &bull; 1 QUEST &bull; 0 EXTERNAL CALLS</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ PARTY BENCH ============ -->
+  <footer class="bench" id="bench" hidden>
+    <div class="bench-label">PARTY <span id="benchCount">0/5</span></div>
+    <div class="bench-slots" id="benchSlots"></div>
+    <button class="fight-btn" id="fightBtn" type="button" disabled>FIGHT!</button>
+  </footer>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
