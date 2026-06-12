@@ -123,12 +123,23 @@ def build_sjr(con):
         for name, q_marker in row["cats"]:
             arr = cat_sorted[name]
             N = len(arr)
-            # n = count <= v  (right side of searchsorted), rank = count > v + 1
-            n_le = int(np.searchsorted(arr, v, side="right"))
-            n_gt = N - n_le  # journals strictly greater than v  (matches Colab)
-            pct = 100.0 * n_le / N if N else 0.0
+            n_le = int(np.searchsorted(arr, v, side="right"))   # count <= v
+            n_lt = int(np.searchsorted(arr, v, side="left"))    # count strictly < v
+            n_gt = N - n_le  # journals strictly greater than v
+            # Percentile = Scopus's own definition, [(lower + 0.5*ties)/N]*100, a
+            # mid-rank percentile. This makes the SJR percentile use the SAME
+            # formula as Scopus CiteScore AND stay consistent with the rank-based
+            # quartile (Q1 <=> pct >= 75): e.g. a journal ranked #22/85 is Q2 and
+            # scores 74.7, not the old inclusive 75.3 that looked like Q1.
+            pct = 100.0 * (n_lt + n_le) / (2 * N) if N else 0.0
             rank = n_gt + 1
-            q = q_marker if q_marker else quartile_from_percentile(pct)
+            # Derive the quartile from OUR percentile (top 25% = Q1, etc.) so rank,
+            # percentile and quartile are always mutually consistent. We do NOT use
+            # SCImago's published (Qx) marker because those markers are sometimes
+            # internally inconsistent with the SJR ranking itself (non-monotonic:
+            # e.g. a higher-SJR journal marked Q2 while a lower-SJR one is Q1 in the
+            # same category), which would contradict the percentile bar/rank we show.
+            q = quartile_from_percentile(pct)
             crows.append((jid, name, round(pct, 2), rank, N, q))
             cats_payload.append((name, pct, rank, N, q))
         best_q = min((c[4] for c in cats_payload), default=4) if cats_payload else None
