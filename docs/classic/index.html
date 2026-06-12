@@ -68,11 +68,15 @@
 
   <footer class="footer">
     <span>Q1obsessed</span> · data: SCImago SJR 2025 &amp; Scopus CiteScore ·
-    percentiles computed live from the full databases
+    percentiles computed from the full databases
   </footer>
 
   <a href="../arcade/" class="ver-switch" title="Try the game-like Arcade version">
     <span class="vs-ic">🕹️</span><span class="vs-text">Arcade mode</span>
+  </a>
+  <a href="https://buymeacoffee.com/imeewanfiv" target="_blank" rel="noopener"
+     class="coffee-fab" title="Support Q1obsessed — buy me a coffee">
+    <span class="cf-ic">☕</span><span class="cf-text">Buy me a coffee</span>
   </a>
   <style>
     .ver-switch{position:fixed;left:18px;bottom:16px;z-index:50;display:inline-flex;align-items:center;gap:8px;
@@ -84,9 +88,25 @@
       box-shadow:0 12px 34px -8px rgba(255,126,182,.6);color:#fff}
     .ver-switch .vs-ic{font-size:16px;animation:vsWobble 2.6s ease-in-out infinite}
     @keyframes vsWobble{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
-    @media(max-width:560px){.ver-switch .vs-text{display:none}.ver-switch{padding:11px}}
+    /* Always-visible floating "buy me a coffee" button (bottom-right) */
+    .coffee-fab{position:fixed;right:18px;bottom:16px;z-index:50;display:inline-flex;align-items:center;gap:8px;
+      font-family:'Inter',sans-serif;font-weight:800;font-size:13px;text-decoration:none;color:#241a00;
+      background:linear-gradient(135deg,#ffd35c,#ff9d2f);border-radius:999px;padding:10px 17px;
+      box-shadow:0 10px 30px -8px rgba(255,157,47,.75);transition:.22s cubic-bezier(.2,.8,.2,1)}
+    .coffee-fab:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 16px 38px -8px rgba(255,157,47,.9)}
+    .coffee-fab .cf-ic{font-size:16px;animation:cfSteam 2.8s ease-in-out infinite}
+    @keyframes cfSteam{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-2px) rotate(4deg)}}
+    @media(max-width:560px){
+      .ver-switch .vs-text{display:none}.ver-switch{padding:11px}
+      .coffee-fab .cf-text{display:none}.coffee-fab{padding:12px}
+    }
   </style>
   <script src="../data.js"></script>
   <script src="app.js"></script>
+
+  <!-- Visitor analytics: GoatCounter (privacy-friendly, cookieless, no consent banner).
+       Dashboard: https://q1obsessed.goatcounter.com -->
+  <script data-goatcounter="https://q1obsessed.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
