@@ -5,19 +5,30 @@
 window.Q1OMatch = (function () {
   'use strict';
 
-  // Google Scholar's "gs_a" line looks like:
-  //   "F Author, S Author - Journal Name, vol(issue), 2021 - publisher.com"
-  // The venue is the segment right after the authors; the journal name is the
-  // text before the first comma in that segment.
+  // Strip the journal name out of a venue string by removing a trailing
+  // volume/issue/pages/article tail. Handles both:
+  //   search results:  "Journal of Molecular Structure, 1234, 2020"
+  //   author profiles: "Acs Omega 4 (16), 16999-17008" / "Methods 230, 147-157"
+  //                    "ChemMedChem, e202400447" / "Plos one 18 (5), e0280232"
+  function cleanVenue(s) {
+    s = (s || '').trim();
+    s = s.replace(/\s[\-‐-―]\s[^\-]*$/, '').trim();   // drop a trailing " - publisher"
+    // cut at the first comma OR the first " <digit>" (volume), whichever comes first
+    const m = s.match(/^(.*?)(?:,|\s)\s*\d/);
+    if (m && m[1].replace(/,$/, '').trim().length >= 2) return m[1].replace(/,$/, '').trim();
+    return s.replace(/,.*$/, '').trim();
+  }
+
+  // Google Scholar "gs_a" search line: "Authors - Venue, vol, year - publisher".
+  // Profile venue line has no dashes — just "Venue vol (iss), pages".
   function extractVenue(gsaText) {
     if (!gsaText) return null;
-    const parts = gsaText.split(/\s[\-‐-―]\s/);   // split on " - " / dashes
-    if (parts.length < 2) return null;
-    let seg = parts.length >= 3 ? parts.slice(1, parts.length - 1).join(' - ') : parts[1];
-    seg = seg.replace(/,\s*\d{4}\b.*$/, '');                // drop ", YEAR ..." onward
-    let venue = seg.split(',')[0].trim();                   // journal name before 1st comma
-    venue = venue.replace(/\s*\(\d{4}\)\s*$/, '').trim();   // strip trailing "(2021)"
-    return venue;
+    const parts = gsaText.split(/\s[\-‐-―]\s/);
+    let seg;
+    if (parts.length >= 3) seg = parts.slice(1, parts.length - 1).join(' - ');
+    else if (parts.length === 2) seg = parts[1];
+    else seg = parts[0];   // no dashes -> the whole string is the venue
+    return cleanVenue(seg);
   }
 
   // Each significant venue token must be a prefix of the journal's token in order,
@@ -62,5 +73,5 @@ window.Q1OMatch = (function () {
     return v ? matchVenue(v) : null;
   }
 
-  return { extractVenue, matchVenue, matchEntry };
+  return { extractVenue, matchVenue, matchEntry, cleanVenue };
 })();

@@ -134,15 +134,15 @@
   }
 
   function scanProfile(root) {
-    // Author profile: each publication row, venue is the 2nd grey line.
+    // Author profile: each publication row; the venue is the last grey line.
     for (const row of root.querySelectorAll('.gsc_a_tr')) {
       if (row.dataset.q1o) continue;
       const grays = row.querySelectorAll('.gs_gray');
       const titleCell = row.querySelector('.gsc_a_at');
       if (grays.length < 2 || !titleCell) continue;
       row.dataset.q1o = '1';
-      const rec = Q1OMatch.matchVenue(Q1OMatch.extractVenue(grays[1].textContent) || grays[1].textContent);
-      if (rec) titleCell.parentElement.appendChild(badges(rec));
+      const rec = Q1OMatch.matchVenue(Q1OMatch.extractVenue(grays[grays.length - 1].textContent));
+      if (rec) titleCell.insertAdjacentElement('afterend', badges(rec));
     }
   }
 
