@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "Q1obsessed — Journal Quartiles for Scholar",
+  "version": "0.1.0",
+  "description": "Shows SJR and Scopus (CiteScore) quartile badges next to every journal on Google Scholar. Click a badge for the full per-field breakdown.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Q1obsessed Quartiles",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://scholar.google.com/*",
+        "*://scholar.google.co.uk/*",
+        "*://scholar.google.ca/*",
+        "*://scholar.google.de/*",
+        "*://scholar.google.co.in/*",
+        "*://scholar.google.com.au/*",
+        "*://scholar.google.co.th/*",
+        "*://scholar.google.es/*",
+        "*://scholar.google.fr/*",
+        "*://scholar.google.it/*",
+        "*://scholar.google.com.br/*",
+        "*://scholar.google.co.jp/*"
+      ],
+      "js": ["src/data.js", "src/match.js", "src/content.js"],
+      "css": ["src/ui.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["data/journals.json"],
+      "matches": ["*://scholar.google.com/*", "*://scholar.google.*/*"]
+    }
+  ],
+  "host_permissions": ["https://imeewan.github.io/*"],
+  "permissions": ["storage"]
+}

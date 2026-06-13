@@ -1,0 +1,119 @@
+/* Q1obsessed extension — badge + popup styling.
+ * Badges render on Google Scholar's white pages, so every visual property is set
+ * explicitly to stay isolated from Scholar's CSS. The popup is a dark modal. */
+
+/* ---------------- injected badges (on white Scholar pages) ---------------- */
+.q1o-badges {
+  display: inline-flex; gap: 5px; vertical-align: middle; margin-left: 8px;
+  box-sizing: border-box; line-height: 1; white-space: nowrap; cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+.q1o-badges:focus { outline: none; }
+.q1o-badges:focus-visible { outline: 2px solid #27b79a; outline-offset: 2px; border-radius: 9px; }
+
+.q1o-badge {
+  display: inline-flex; align-items: center; gap: 5px; box-sizing: border-box;
+  padding: 2px 8px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, .07);
+  font-size: 11px; font-weight: 700; letter-spacing: .2px; color: #1a1f33;
+  box-shadow: 0 1px 2px rgba(20, 24, 48, .12);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.q1o-badge .q1o-src {
+  font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px;
+  opacity: .8;
+}
+.q1o-badge .q1o-q { font-size: 11.5px; font-weight: 800; }
+.q1o-badges:hover .q1o-badge { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(20, 24, 48, .18); }
+.q1o-badges:active .q1o-badge { transform: translateY(0); }
+
+/* quartile palette */
+.q1o-badge.q1o-q1 { background: linear-gradient(135deg, #ffd75f, #ff9d2f); color: #3a2800; border-color: rgba(255, 157, 47, .55); }
+.q1o-badge.q1o-q2 { background: linear-gradient(135deg, #e8faff, #cdf1ff); color: #0b6b86; border-color: #bfeaff; }
+.q1o-badge.q1o-q3 { background: linear-gradient(135deg, #f5efff, #ece2ff); color: #5b3aa8; border-color: #e0d4ff; }
+.q1o-badge.q1o-q4 { background: linear-gradient(135deg, #f1f3f9, #e9ecf6); color: #4a5172; border-color: #dfe3ef; }
+.q1o-badge.q1o-na { background: #f5f6f9; color: #9aa1b5; border-color: #e6e8ef; }
+/* source accent (left bar) */
+.q1o-badge.q1o-sjr  { box-shadow: inset 3px 0 0 #27b79a, 0 1px 2px rgba(20, 24, 48, .12); }
+.q1o-badge.q1o-scopus { box-shadow: inset 3px 0 0 #e1457f, 0 1px 2px rgba(20, 24, 48, .12); }
+.q1o-badges:hover .q1o-badge.q1o-sjr  { box-shadow: inset 3px 0 0 #27b79a, 0 4px 10px rgba(20, 24, 48, .18); }
+.q1o-badges:hover .q1o-badge.q1o-scopus { box-shadow: inset 3px 0 0 #e1457f, 0 4px 10px rgba(20, 24, 48, .18); }
+
+html.q1o-off .q1o-badges { display: none !important; }
+
+/* ---------------- detail popup (dark modal over Scholar) ---------------- */
+.q1o-overlay {
+  position: fixed; inset: 0; z-index: 2147483600; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: rgba(4, 6, 15, .66); backdrop-filter: blur(6px);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased; animation: q1o-fade .18s ease both;
+}
+.q1o-pop {
+  box-sizing: border-box; width: 100%; max-width: 660px; max-height: 86vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: #0c1024; color: #eef1ff; border: 1px solid rgba(140, 150, 220, .18);
+  border-radius: 18px; box-shadow: 0 40px 100px -30px rgba(0, 0, 0, .9);
+  animation: q1o-pop-in .22s cubic-bezier(.2, .8, .2, 1) both;
+}
+.q1o-pop-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+  padding: 20px 22px 14px; border-bottom: 1px solid rgba(140, 150, 220, .16);
+}
+.q1o-pop-title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.4px; line-height: 1.2; color: #fff; }
+.q1o-pop-sub { margin-top: 5px; font-size: 12.5px; color: #9aa3c7; }
+.q1o-close {
+  flex: none; box-sizing: border-box; width: 34px; height: 34px; border-radius: 10px;
+  background: rgba(255, 255, 255, .04); border: 1px solid rgba(140, 150, 220, .16);
+  color: #9aa3c7; font-size: 22px; line-height: 1; cursor: pointer; transition: .15s;
+}
+.q1o-close:hover { color: #fff; border-color: #ffd35c; }
+
+.q1o-pop-body { padding: 16px 20px; overflow-y: auto; }
+.q1o-loading { text-align: center; color: #9aa3c7; padding: 36px 10px; font-size: 14px; }
+.q1o-empty { color: #9aa3c7; font-size: 13px; padding: 14px 6px; }
+
+.q1o-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 560px) { .q1o-grid { grid-template-columns: 1fr; } }
+.q1o-col { min-width: 0; }
+.q1o-col-head {
+  display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700;
+  padding-bottom: 10px; margin-bottom: 8px; border-bottom: 1px solid rgba(140, 150, 220, .14);
+}
+.q1o-col-head b { font-weight: 800; }
+.q1o-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.q1o-dot.q1o-sjr { background: #5ee0c0; box-shadow: 0 0 10px #5ee0c0; }
+.q1o-dot.q1o-scopus { background: #ff7eb6; box-shadow: 0 0 10px #ff7eb6; }
+.q1o-mv { margin-left: auto; font-size: 12.5px; color: #c7cdf0; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.q1o-row {
+  display: grid; grid-template-columns: 34px 1fr auto auto; align-items: center; gap: 9px;
+  padding: 7px 4px; border-bottom: 1px solid rgba(255, 255, 255, .05);
+}
+.q1o-cat { font-size: 13px; color: #dfe3ff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.q1o-rank { font-size: 11.5px; color: #9aa3c7; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.q1o-pct { font-size: 13px; font-weight: 800; color: #fff; min-width: 38px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* quartile chips (in popup) */
+.q1o-qb {
+  flex: none; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; padding: 2px 6px; border-radius: 6px; font-size: 10.5px; font-weight: 800; letter-spacing: .3px;
+}
+.q1o-qb.q1o-q1 { background: linear-gradient(135deg, #ffd35c, #ff9d2f); color: #2a1d00; }
+.q1o-qb.q1o-q2 { background: rgba(122, 217, 255, .18); color: #7ad9ff; }
+.q1o-qb.q1o-q3 { background: rgba(182, 147, 255, .18); color: #b693ff; }
+.q1o-qb.q1o-q4 { background: rgba(107, 114, 153, .25); color: #aeb4d6; }
+.q1o-qb.q1o-qx { background: rgba(255, 255, 255, .06); color: #9aa3c7; }
+
+.q1o-pop-foot {
+  padding: 12px 22px; border-top: 1px solid rgba(140, 150, 220, .14);
+  font-size: 11.5px; color: #7e87ad; text-align: center;
+}
+.q1o-pop-foot b { color: #c7cdf0; }
+
+@keyframes q1o-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes q1o-pop-in { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .q1o-overlay, .q1o-pop { animation: none; }
+  .q1o-badge { transition: none; }
+}
